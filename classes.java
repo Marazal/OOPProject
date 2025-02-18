@@ -1,4 +1,56 @@
-public class User {
+import java.util.ArrayList;
+
+class Account {
+    protected int accountNum;
+    protected int accountPIN;
+    protected double balance;
+
+    public Account(int accountNum, int accountPIN, double balance) {
+        this.accountNum = accountNum;
+        this.accountPIN = accountPIN;
+        this.balance = balance;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+}
+
+class SavingsAccount extends Account {
+    private double savingsGoal;
+
+    public SavingsAccount(int accountNum, int accountPIN, double balance, double savingsGoal) {
+        super(accountNum, accountPIN, balance);
+        this.savingsGoal = savingsGoal;
+    }
+
+    public void addToSavings(double amount) {
+        this.balance += amount;
+        System.out.println("Savings updated: " + this.balance);
+    }
+}
+
+class ExpenseAccount extends Account {
+    private ArrayList<String> categories = new ArrayList<>();
+    private ArrayList<Double> expenses = new ArrayList<>();
+
+    public ExpenseAccount(int accountNum, int accountPIN, double balance) {
+        super(accountNum, accountPIN, balance);
+    }
+
+    public void addExpense(String category, double amount) {
+        categories.add(category);
+        expenses.add(amount);
+        this.balance -= amount;
+        System.out.println("Expense recorded under " + category + ": " + amount);
+    }
+}
+
+class User {
     private String name;
     private int userID;
     private String password;
@@ -26,14 +78,6 @@ public class User {
     public void setUserID(int userID) {
         this.userID = userID;
     }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
 }
 
 class Admin extends User {
@@ -50,53 +94,7 @@ class Admin extends User {
     }
 }
 
-class Account {
-    private int accountNum;
-    private int accountPIN;
-    private double accountTotalBalance;
-
-    public Account(int accountNum, int accountPIN, double accountTotalBalance) {
-        this.accountNum = accountNum;
-        this.accountPIN = accountPIN;
-        this.accountTotalBalance = accountTotalBalance;
-    }
-
-    public int getAccountNum() {
-        return accountNum;
-    }
-
-    public void setAccountNum(int accountNum) {
-        this.accountNum = accountNum;
-    }
-
-    public int getPIN() {
-        return accountPIN;
-    }
-
-    public void setPIN(int accountPIN) {
-        this.accountPIN = accountPIN;
-    }
-
-    public double getBalance() {
-        return accountTotalBalance;
-    }
-
-    public void setBalance(double accountTotalBalance) {
-        this.accountTotalBalance = accountTotalBalance;
-    }
-}
-
 class Transaction {
-    private double balance;
-    private double transactionAmount;
-    private int receiverAccNum;
-
-    public Transaction(double balance, double transactionAmount, int receiverAccNum) {
-        this.balance = balance;
-        this.transactionAmount = transactionAmount;
-        this.receiverAccNum = receiverAccNum;
-    }
-
     public double withdraw(double balance, double transactionAmount) {
         if (balance >= transactionAmount) {
             return balance - transactionAmount;
@@ -108,60 +106,6 @@ class Transaction {
 
     public double deposit(double balance, double transactionAmount) {
         return balance + transactionAmount;
-    }
-}
-
-class Expense {
-    private int expenseID;
-    private double amount;
-    private String category;
-
-    public Expense(int expenseID, double amount, String category) {
-        this.expenseID = expenseID;
-        this.amount = amount;
-        this.category = category;
-    }
-
-    public int getExpenseID() {
-        return expenseID;
-    }
-
-    public void setExpenseID(int expenseID) {
-        this.expenseID = expenseID;
-    }
-
-    public double getAmount() {
-        return amount;
-    }
-
-    public void setAmount(double amount) {
-        this.amount = amount;
-    }
-}
-
-class Savings {
-    private int savingID;
-    private double amount;
-
-    public Savings(int savingID, double amount) {
-        this.savingID = savingID;
-        this.amount = amount;
-    }
-
-    public int getSavingID() {
-        return savingID;
-    }
-
-    public void setSavingID(int savingID) {
-        this.savingID = savingID;
-    }
-
-    public double getAmount() {
-        return amount;
-    }
-
-    public void setAmount(double amount) {
-        this.amount = amount;
     }
 }
 
@@ -190,4 +134,5 @@ class Report {
         this.reportType = reportType;
     }
 }
+
 
