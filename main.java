@@ -1,150 +1,263 @@
+package proj;
+ 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.Scanner;
-
-public class Main {
+ 
+public class main {
     private static ArrayList<User> users = new ArrayList<>();
     private static ArrayList<Account> accounts = new ArrayList<>();
-    private static ArrayList<Transaction> transactions = new ArrayList<>();
-    private static ArrayList<Expense> expenses = new ArrayList<>();
-    private static ArrayList<Savings> savingsList = new ArrayList<>();
-
+    private static Scanner scanner = new Scanner(System.in);
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Welcome to the Finance App!");
-        
-        System.out.print("Enter your name: ");
-        String name = scanner.nextLine();
-        
-        int userID = new Random().nextInt(10000);
-        System.out.println("Your assigned User ID: " + userID);
-        
-        System.out.print("Create a password: ");
-        String password = scanner.nextLine();
-        
-        System.out.print("Are you an admin? (yes/no): ");
-        boolean isAdmin = scanner.nextLine().equalsIgnoreCase("yes");
-        
-        User user = isAdmin ? new Admin(name, userID, password) : new User(name, userID, password, false);
-        users.add(user);
-        
-        if (!isAdmin) {
-            setupUserAccount(scanner);
-        }
-        scanner.close();
-    }
-    
-    private static void setupUserAccount(Scanner scanner) {
-        System.out.print("Create Account Number: ");
-        int accountNum = scanner.nextInt();
-        
-        System.out.print("Create Account PIN: ");
-        int accountPIN = scanner.nextInt();
-        
-        System.out.print("Enter initial balance: ");
-        double balance = scanner.nextDouble();
-        
-        Account account = new Account(accountNum, accountPIN, balance);
-        accounts.add(account);
-        System.out.println("Account created successfully!");
-        
-        handleUserActions(scanner, account);
-    }
-    
-    private static void handleUserActions(Scanner scanner, Account account) {
         while (true) {
-            System.out.println("Choose an action: \n1. Deposit\n2. Withdraw\n3. Transfer Money\n4. Add Expense\n5. Add Savings\n6. Generate Report\n7. Exit");
+            System.out.println("\n=== Banking System ===");
+            System.out.println("1. Register User");
+            System.out.println("2. Login");
+            System.out.println("3. Exit");
+            System.out.print("Choose an option: ");
             int choice = scanner.nextInt();
-            
+            scanner.nextLine();
             switch (choice) {
-                case 1:
-                    depositMoney(scanner, account);
-                    break;
-                case 2:
-                    withdrawMoney(scanner, account);
-                    break;
-                case 3:
-                    transferMoney(scanner, account);
-                    break;
-                case 4:
-                    addExpense(scanner);
-                    break;
-                case 5:
-                    addSavings(scanner);
-                    break;
-                case 6:
-                    generateReport();
-                    break;
-                case 7:
-                    System.out.println("Exiting...");
+                case 1 -> registerUser();
+                case 2 -> loginUser();
+                case 3 -> {
+                    System.out.println("Exiting system...");
                     return;
-                default:
-                    System.out.println("Invalid choice. Try again.");
+                }
+                default -> System.out.println("Invalid option! Try again.");
             }
         }
     }
-    
-    private static void depositMoney(Scanner scanner, Account account) {
-        System.out.print("Enter deposit amount: ");
-        double depositAmount = scanner.nextDouble();
-        account.setBalance(account.getBalance() + depositAmount);
-        System.out.println("New Balance: " + account.getBalance());
+    // REGISTER A NEW USER
+    private static void registerUser() {
+        System.out.print("Enter your name: ");
+        String name = scanner.nextLine();
+        System.out.print("Enter User ID: ");
+        int userID = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+        System.out.print("Enter password: ");
+        String password = scanner.nextLine();
+        users.add(new User(name, userID, password, false));
+        System.out.println("User registered successfully!");
     }
-    
-    private static void withdrawMoney(Scanner scanner, Account account) {
-        System.out.print("Enter withdrawal amount: ");
-        double withdrawAmount = scanner.nextDouble();
-        if (withdrawAmount <= account.getBalance()) {
-            account.setBalance(account.getBalance() - withdrawAmount);
-            System.out.println("New Balance: " + account.getBalance());
-        } else {
-            System.out.println("Insufficient funds.");
+ 
+    // LOGIN EXISTING USER
+    private static void loginUser() {
+        System.out.print("Enter User ID: ");
+        int userID = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+        System.out.print("Enter password: ");
+        String password = scanner.nextLine();
+ 
+        User loggedInUser = null;
+        for (User user : users) {
+            if (user.getUserID() == userID && user.getPassword().equals(password)) {
+                loggedInUser = user;
+                break;
+            }
+        }
+ 
+        if (loggedInUser == null) {
+            System.out.println("Invalid credentials! Try again.");
+            return;
+        }
+ 
+        System.out.println("Login successful! Welcome, " + loggedInUser.getName());
+        userMenu(loggedInUser);
+    }
+ 
+    private static void userMenu(User user) {
+        while (true) {
+            System.out.println("\n=== User Menu ===");
+            System.out.println("1. Create Expense and/or Saving Account");
+            System.out.println("2. Perform Transactions");
+            System.out.println("3. Manage Expense Account");
+            System.out.println("4. Manage Savings Account");
+            System.out.println("5. Generate Report");
+            System.out.println("6. Logout");
+            System.out.print("Choose an option: ");
+ 
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+ 
+            switch (choice) {
+                case 1 -> createAccount(user);
+                case 2 -> performTransaction(user);
+                case 3 -> manageExpense(user);
+                case 4 -> manageSavings(user);
+                case 5 -> generateReport(user);
+                case 6 -> {
+                    System.out.println("Logging out...");
+                    return;
+                }
+                default -> System.out.println("Invalid option! Try again.");
+            }
         }
     }
-    
-    private static void transferMoney(Scanner scanner, Account account) {
-        System.out.print("Enter recipient account number: ");
-        int receiverAcc = scanner.nextInt();
-        System.out.print("Enter amount to transfer: ");
-        double transferAmount = scanner.nextDouble();
-        if (transferAmount <= account.getBalance()) {
-            account.setBalance(account.getBalance() - transferAmount);
-            System.out.println("Transfer successful. New Balance: " + account.getBalance());
+ 
+    // CREATE ACCOUNT
+    private static void createAccount(User user) {
+        System.out.println("Choose account type:");
+        System.out.println("1. Expense Account");
+        System.out.println("2. Savings Account");
+        int choice = scanner.nextInt();
+        System.out.print("Enter account number: ");
+        int accountNum = scanner.nextInt();
+        System.out.print("Enter PIN: ");
+        int pin = scanner.nextInt();
+        System.out.print("Enter initial balance: ");
+        double balance = scanner.nextDouble();
+ 
+        if (choice == 1) {
+            accounts.add(new Expense(accountNum, pin, balance, pin, balance, null));
+            System.out.println("Expense Account created successfully!");
+        } else if (choice == 2) {
+            accounts.add(new Savings(accountNum, pin, balance, pin, balance));
+            System.out.println("Savings Account created successfully!");
         } else {
-            System.out.println("Insufficient funds.");
+            System.out.println("Invalid choice!");
         }
     }
-    
-    private static void addExpense(Scanner scanner) {
-        System.out.print("Enter expense category: ");
+ 
+    // PERFORM TRANSACTIONS
+    private static void performTransaction(User user) {
+        System.out.print("Enter Account Number: ");
+        int accountNum = scanner.nextInt();
+        Account account = findAccount(accountNum);
+ 
+        if (account == null) {
+            System.out.println("Account not found!");
+            return;
+        }
+ 
+        System.out.println("Choose transaction:");
+        System.out.println("1. Deposit");
+        System.out.println("2. Withdraw");
+        int choice = scanner.nextInt();
+ 
+        System.out.print("Enter amount: ");
+        double amount = scanner.nextDouble();
+ 
+        if (choice == 1) {
+            account.setBalance(account.getBalance() + amount);
+            System.out.println("Deposit successful! New Balance: " + account.getBalance());
+        } else if (choice == 2) {
+            if (account.getBalance() >= amount) {
+                account.setBalance(account.getBalance() - amount);
+                System.out.println("Withdrawal successful! New Balance: " + account.getBalance());
+            } else {
+                System.out.println("Insufficient balance!");
+            }
+        } else {
+            System.out.println("Invalid choice!");
+        }
+    }
+ 
+    // MANAGE EXPENSE ACCOUNT
+    private static void manageExpense(User user) {
+        ArrayList<Expense> expenses = new ArrayList<>();
+        while (true) {
+            System.out.println("\n=== Expense Management ===");
+            System.out.println("1. Add Expense");
+            System.out.println("2. View Expenses");
+            System.out.println("3. Delete Expense");
+            System.out.println("4. Return to User Menu");
+            System.out.print("Choose an option: ");
+            
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+            
+            switch (choice) {
+                case 1 -> {
+                    System.out.print("Enter Expense ID: ");
+                    int expenseID = scanner.nextInt();
+                    System.out.print("Enter Amount: ");
+                    double amount = scanner.nextDouble();
+                    scanner.nextLine();
+                    System.out.print("Enter Category: ");
+                    String category = scanner.nextLine();
+                    
+                    Expense expense = new Expense(user.getUserID(), 0, 0, expenseID, amount, category);
+                    expenses.add(expense);
+                    System.out.println("Expense added successfully!");
+                }
+                case 2 -> {
+                    System.out.println("\nYour Expenses:");
+                    for (Expense expense : expenses) {
+                        expense.displayExpense();
+                        System.out.println("--------------------");
+                    }
+                }
+                case 3 -> {
+                    System.out.print("Enter Expense ID to delete: ");
+                    int idToDelete = scanner.nextInt();
+                    expenses.removeIf(expense -> expense.getExpenseID() == idToDelete);
+                    System.out.println("Expense deleted successfully!");
+                }
+                case 4 -> {
+                    return;
+                }
+                default -> System.out.println("Invalid option! Try again.");
+            }
+        }
+    }
+ 
+    // MANAGE SAVINGS ACCOUNT
+    private static void manageSavings(User user) {
+        System.out.println("\n=== Savings Management ===");
+        System.out.println("1. Set Savings Goal");
+        System.out.println("2. Deposit Money");
+        System.out.println("3. Withdraw Money");
+        System.out.println("4. View Savings Details");
+        System.out.println("5. Return to User Menu");
+        System.out.print("Choose an option: ");
+        
+        int choice = scanner.nextInt();
         scanner.nextLine();
-        String category = scanner.nextLine();
-        System.out.print("Enter expense amount: ");
-        double expenseAmount = scanner.nextDouble();
-        expenses.add(new Expense(expenseAmount, category));
-        System.out.println("Expense recorded.");
-    }
-    
-    private static void addSavings(Scanner scanner) {
-        System.out.print("Enter savings goal: ");
-        double goal = scanner.nextDouble();
-        Savings savings = new Savings(goal);
-        savingsList.add(savings);
-        System.out.println("Savings goal set.");
-    }
-    
-    private static void generateReport() {
-        try (FileWriter writer = new FileWriter("financial_report.txt")) {
-            double totalExpenses = expenses.stream().mapToDouble(Expense::getExpenseAmount).sum();
-            double totalSavings = savingsList.stream().mapToDouble(Savings::getCurrentSaving).sum();
-            writer.write("Financial Report\n");
-            writer.write("Total Expenses: " + totalExpenses + "\n");
-            writer.write("Total Savings: " + totalSavings + "\n");
-            System.out.println("Report generated successfully!");
-        } catch (IOException e) {
-            System.out.println("Error generating report.");
+        
+        switch (choice) {
+            case 1 -> {
+                System.out.print("Enter savings goal amount: ");
+                double goal = scanner.nextDouble();
+                System.out.println("Savings goal set to: $" + goal);
+            }
+            case 2 -> System.out.println("Deposit feature coming soon...");
+            case 3 -> System.out.println("Withdraw feature coming soon...");
+            case 4 -> System.out.println("Viewing savings details coming soon...");
+            case 5 -> {
+                return;
+            }
+            default -> System.out.println("Invalid option! Try again.");
         }
+    }
+ 
+    // GENERATE REPORT AND SAVE TO FILE
+    private static void generateReport(User user) {
+        try {
+            FileWriter writer = new FileWriter(user.getName() + "_report.txt");
+            writer.write("=== Banking Report ===\n");
+            writer.write("User: " + user.getName() + "\n");
+            writer.write("Accounts:\n");
+ 
+            for (Account account : accounts) {
+                writer.write("Account Number: " + account.getAccountNum() + " | Balance: $" + account.getBalance() + "\n");
+            }
+ 
+            writer.close();
+            System.out.println("Report generated successfully! File saved as " + user.getName() + "_report.txt");
+        } catch (IOException e) {
+            System.out.println("Error generating report!");
+        }
+    }
+ 
+    // FIND ACCOUNT BY NUMBER
+    private static Account findAccount(int accountNum) {
+        for (Account account : accounts) {
+            if (account.getAccountNum() == accountNum) {
+                return account;
+            }
+        }
+        return null;
     }
 }
