@@ -1,28 +1,28 @@
 package proj;
 
 class Transaction {
-
-	    public double balance;
-	    public  double transactionAmount;
-	    public int receiverAccNum;
-
-	    public Transaction(double balance, double transactionAmount, int receiverAccNum) {
-	        this.balance = balance;
-	        this.transactionAmount = transactionAmount;
-	        this.receiverAccNum = receiverAccNum;
+	    public Transaction() {
+	    	
 	    }
 
-	    public double withdraw(double balance, double transactionAmount) {
-	        if (balance >= transactionAmount) {
-	            return balance - transactionAmount;
+	    public void withdraw(double amount, Account account) {
+	        if (account.getBalance() >= amount) {
+	            account.setBalance(account.getBalance() - amount);
 	        } else {
 	            System.out.println("Insufficient funds");
-	            return balance;
 	        }
 	    }
 
-	    public double deposit(double balance, double transactionAmount) {
-	        return balance + transactionAmount;
+	    public void deposit(Account account, double amount) {
+	    	account.setBalance(account.getBalance() + amount);
 	    }
-
+	    
+	    public void transfer(Account account, double amount, Account reciever) {
+	    	if (account.getBalance() >= amount) {
+	            account.setBalance(account.getBalance() - amount);
+	            reciever.setBalance(reciever.getBalance() + amount);
+	        } else {
+	            System.out.println("Insufficient funds");
+	        }
+	    }
 }

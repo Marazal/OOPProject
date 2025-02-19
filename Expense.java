@@ -1,15 +1,19 @@
 package proj;
 
+import java.time.LocalDate;
+
 class Expense extends Account {
     private int expenseID;
     private double amount;
     private String category;
+    private LocalDate date;
 
     public Expense(int accountNum, int accountPIN, double balance, int expenseID, double amount, String category) {
         super(accountNum, accountPIN, balance); // Call parent constructor
         this.expenseID = expenseID;
         this.amount = amount;
         this.category = category;
+        this.date = LocalDate.now();
     }
 
     public int getExpenseID() {
@@ -36,11 +40,20 @@ class Expense extends Account {
         this.category = category;
     }
     
-    public void displayExpense() {
+    protected void displayExpense(Account account) {
         System.out.println("Expense ID: " + expenseID);
+        System.out.println("Expense Date: " + getDate());
         System.out.println("Amount: $" + amount);
         System.out.println("Category: " + category);
-        System.out.println("Account Number: " + getAccountNum()); // From parent class
-        System.out.println("Remaining Balance: $" + getBalance());
+        System.out.println("Account Number: " + account.getAccountNum());
+        System.out.println("Remaining Balance: $" + account.getBalance());
+    }
+    
+    public LocalDate getDate() {
+    	return date;
+    }
+    
+    public void setDate() {
+    	this.date = LocalDate.now();
     }
 }
