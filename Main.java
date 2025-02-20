@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
  
 public class Main {
+	
     private static ArrayList<User> users = new ArrayList<>();
     private static ArrayList<Account> accounts = new ArrayList<>();
     private static ArrayList<Expense> expenses = new ArrayList<>();
@@ -161,18 +162,21 @@ public class Main {
  
     // MANAGE EXPENSE ACCOUNT
     private static void manageExpense(User user) {
-    	System.out.print("Enter Account Number: ");
+        System.out.print("Enter Account Number: ");
         int accountNum = scanner.nextInt();
         Account account = findAccount(accountNum);
- 
+
         if (account == null) {
             System.out.println("Account not found!");
             return;
         }
-        if(scanner.nextInt() != account.getAccountPIN()) {
-        	System.out.println("Wrong Pin!");
-        	return;
+
+        System.out.print("Enter PIN: ");
+        if (scanner.nextInt() != account.getAccountPIN()) {
+            System.out.println("Wrong Pin!");
+            return;
         }
+
         while (true) {
             System.out.println("\n=== Expense Management ===");
             System.out.println("1. Add Expense");
@@ -180,10 +184,10 @@ public class Main {
             System.out.println("3. Delete Expense");
             System.out.println("4. Return to User Menu");
             System.out.print("Choose an option: ");
-            
+
             int choice = scanner.nextInt();
             scanner.nextLine();
-            
+
             switch (choice) {
                 case 1 -> {
                     int expenseID = expenses.size() + 1;
@@ -192,29 +196,61 @@ public class Main {
                     scanner.nextLine();
                     System.out.print("Enter Category: ");
                     String category = scanner.nextLine();
-                    
+
+                    if (account.getBalance() < amount) {
+                        System.out.println("Insufficient balance for this expense.");
+                        break;
+                    }
+
                     Expense expense = new Expense(accountNum, account.getAccountPIN(), account.getBalance(), expenseID, amount, category);
                     expenses.add(expense);
-                    account.setBalance(account.getBalance() - expense.getAmount());
+                    account.setBalance(account.getBalance() - amount);
                     System.out.println("Expense added successfully!");
                 }
                 case 2 -> {
                     System.out.println("\nYour Expenses:");
+                    boolean hasExpenses = false;
                     for (Expense expense : expenses) {
-                        expense.displayExpense(account);
-                        System.out.println("--------------------");
+                        if (expense.getAccountNum() == accountNum) {
+                            expense.displayExpense(account);
+                            System.out.println("--------------------");
+                            hasExpenses = true;
+                        }
+                    }
+                    if (!hasExpenses) {
+                        System.out.println("No expenses found for this account.");
                     }
                 }
                 case 3 -> {
                     System.out.print("Enter Expense ID to delete: ");
                     int idToDelete = scanner.nextInt();
+                    boolean removed = false;
+                    expenses.removeIf(expense -> {
+                        if (expense.getExpenseID() == idToDelete) {
+                            account.setBalance(account.getBalance() + expense.getAmount());
+                            System.out.println("Expense deleted successfully!");
+                            return true;
+                        }
+                        return false;
+                    });
+
+                    if (!removed) {
+                        System.out.println("No expense found with the given ID.");
+                    }
+
+                    // Display updated expense list
+                    System.out.println("\nUpdated Expense List:");
+                    boolean hasExpenses = false;
                     for (Expense expense : expenses) {
-                        if(expense.getExpenseID() == idToDelete) {
-                        	account.setBalance(account.getBalance() + expense.getAmount());
+                        if (expense.getAccountNum() == accountNum) {
+                            expense.displayExpense(account);
+                            System.out.println("--------------------");
+                            hasExpenses = true;
                         }
                     }
-                    expenses.removeIf(expense -> expense.getExpenseID() == idToDelete);
-                    System.out.println("Expense deleted successfully!");
+                    if (!hasExpenses) {
+                        System.out.println("No remaining expenses for this account.");
+                    }
                 }
                 case 4 -> {
                     return;
@@ -223,110 +259,137 @@ public class Main {
             }
         }
     }
+
+
  
     // MANAGE SAVINGS ACCOUNT
     private static void manageSavings(User user) {
-    	System.out.print("Enter Account Number: ");
+        System.out.print("Enter Account Number: ");
         int accountNum = scanner.nextInt();
         Account account = findAccount(accountNum);
- 
+
         if (account == null) {
             System.out.println("Account not found!");
             return;
         }
-        if(scanner.nextInt() != account.getAccountPIN()) {
-        	System.out.println("Wrong Pin!");
-        	return;
+
+        System.out.print("Enter PIN: ");
+        if (scanner.nextInt() != account.getAccountPIN()) {
+            System.out.println("Wrong Pin!");
+            return;
         }
-        System.out.println("\n=== Savings Management ===");
-        System.out.println("1. Create Savings");
-        System.out.println("2. Change Saving Goal");
-        System.out.println("3. Add to Saving");
-        System.out.println("4. Withdraw from Saving");
-        System.out.println("5. View Savings Details");
-        System.out.println("6. Return to User Menu");
-        System.out.print("Choose an option: ");
-        
-        int choice = scanner.nextInt();
-        scanner.nextLine();
-        
-        switch (choice) {
-            case 1 -> {
-            	int savingId = savings.size() + 1;
-            	System.out.print("Enter savings goal amount: ");
-                double goal = scanner.nextDouble();
-                Savings saving = new Savings(accountNum, account.getAccountPIN(), account.getBalance(), savingId, 0);
-                savings.add(saving);
-                saving.setSavingGoal(goal);
-                System.out.print("Saving Created!");
-                System.out.println("Savings goal set to: $" + goal);
-            }
-            case 2 -> {
-            	System.out.print("Enter savings goal ID: ");
-            	int savingId = scanner.nextInt();
-            	double goal = 0;
-            	for (Savings saving : savings) {
-                	if(saving.getSavingID() == savingId) {
-                		System.out.print("Enter savings goal amount: ");
-                        goal = scanner.nextDouble();
-                		saving.setSavingGoal(goal);
-                	}
-                	else {
-                		System.out.println("No saving with this ID found.");
-                		break;
-                	}
+
+        while (true) {
+            System.out.println("\n=== Savings Management ===");
+            System.out.println("1. Create Savings");
+            System.out.println("2. Change Saving Goal");
+            System.out.println("3. Add to Savings");
+            System.out.println("4. Withdraw from Savings");
+            System.out.println("5. View Savings Details");
+            System.out.println("6. Return to User Menu");
+            System.out.print("Choose an option: ");
+
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (choice) {
+                case 1 -> {
+                    int savingId = savings.size() + 1;
+                    System.out.print("Enter savings goal amount: ");
+                    double goal = scanner.nextDouble();
+
+                    Savings saving = new Savings(accountNum, account.getAccountPIN(), account.getBalance(), savingId, 0);
+                    saving.setSavingGoal(goal);
+                    savings.add(saving);
+
+                    System.out.println("Savings account created!");
+                    System.out.println("Goal set to: $" + goal);
                 }
-                System.out.println("Savings goal set to: $" + goal);
-            }
-            case 3 -> {
-            	System.out.print("Enter savings goal ID: ");
-            	int savingId = scanner.nextInt();
-            	for (Savings saving : savings) {
-                	if(saving.getSavingID() == savingId) {
-                		System.out.print("Enter savings added amount: ");
-                		saving.addToSaving(scanner.nextDouble());
-                		account.setBalance(account.getBalance() - saving.getAddedAmount());
-                	}
-                	else {
-                		System.out.println("No saving with this ID found.");
-                		break;
-                	}
+                case 2 -> {
+                    System.out.print("Enter savings goal ID: ");
+                    int savingId = scanner.nextInt();
+
+                    for (Savings saving : savings) {
+                        if (saving.getSavingID() == savingId) {
+                            System.out.print("Enter new savings goal amount: ");
+                            double goal = scanner.nextDouble();
+                            saving.setSavingGoal(goal);
+                            System.out.println("New goal set to: $" + goal);
+                            break;
+                        }
+                    }
                 }
-            }
-            case 4 -> {
-            	System.out.print("Enter savings goal ID: ");
-            	int savingId = scanner.nextInt();
-            	for (Savings saving : savings) {
-                	if(saving.getSavingID() == savingId) {
-                		System.out.print("Enter saving widrawl amount: ");
-                		saving.withdrawFromSaving(scanner.nextDouble());
-                		account.setBalance(account.getBalance() - saving.getAccountNum());
-                	}
-                	else {
-                		System.out.println("No saving with this ID found.");
-                		break;
-                	}
+                case 3 -> {
+                    System.out.print("Enter savings goal ID: ");
+                    int savingId = scanner.nextInt();
+
+                    for (Savings saving : savings) {
+                        if (saving.getSavingID() == savingId) {
+                            System.out.print("Enter amount to add: ");
+                            double amount = scanner.nextDouble();
+
+                            if (account.getBalance() < amount) {
+                                System.out.println("Insufficient balance to add to savings.");
+                                break;
+                            }
+
+                            saving.addToSaving(amount);
+                            account.setBalance(account.getBalance() - amount);
+                            System.out.println("Added $" + amount + " to savings.");
+                            break;
+                        }
+                    }
                 }
-            }
-            case 5 -> {
-            	System.out.print("Enter savings goal ID: ");
-            	int savingId = scanner.nextInt();
-            	for (Savings saving : savings) {
-                	if(saving.getSavingID() == savingId) {
-                		saving.displaySavings(account);
-                	}
-                	else {
-                		System.out.println("No saving with this ID found.");
-                		break;
-                	}
+                case 4 -> {
+                    System.out.print("Enter savings goal ID: ");
+                    int savingId = scanner.nextInt();
+
+                    for (Savings saving : savings) {
+                        if (saving.getSavingID() == savingId) {
+                            System.out.print("Enter amount to withdraw: ");
+                            double amount = scanner.nextDouble();
+
+                            if (saving.getAddedAmount() < amount) {
+                                System.out.println("Not enough savings to withdraw this amount.");
+                                break;
+                            }
+
+                            saving.withdrawFromSaving(amount);
+                            account.setBalance(account.getBalance() + amount);
+                            System.out.println("Withdrawn $" + amount + " from savings.");
+                            break;
+                        }
+                    }
                 }
+                case 5 -> {
+                    System.out.print("Enter savings goal ID: ");
+                    int savingId = scanner.nextInt();
+
+                    for (Savings saving : savings) {
+                        if (saving.getSavingID() == savingId) {
+                            double goal = saving.getSavingGoal();
+                            double savedAmount = saving.getAddedAmount();
+                            double withdrawnAmount = saving.getWithdrawnAmount(); // Assuming you have this function
+                            double percentageSaved = (goal > 0) ? (savedAmount / goal) * 100 : 0;
+
+                            System.out.println("\n=== Savings Details ===");
+                            System.out.println("Savings Goal: $" + goal);
+                            System.out.printf("Percentage Saved: %.2f%%\n", percentageSaved);
+                            System.out.println("Total Deposited: $" + savedAmount);
+                            System.out.println("Total Withdrawn: $" + withdrawnAmount);
+                            System.out.println("=====================");
+                            break;
+                        }
+                    }
+                }
+                case 6 -> {
+                    return;
+                }
+                default -> System.out.println("Invalid option! Try again.");
             }
-            case 6 -> {
-                return;
-            }
-            default -> System.out.println("Invalid option! Try again.");
         }
     }
+
  
     // GENERATE REPORT AND SAVE TO FILE
     private static void generateReport(User user) {
