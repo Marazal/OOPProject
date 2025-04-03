@@ -1,8 +1,3 @@
-# OOP Project by 
-6720065 - Ekaterina Kazakova
-6722113 - Tay Zar Aung Htet
-6720051 - Marazal Bahrainee Islam
-
 Project Name: FinSync
 Description: A one stop solution for your finaical trascations, tracking expenses, and setting saving goals. 
 Functionalities: 
